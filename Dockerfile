@@ -8,7 +8,7 @@ WORKDIR /app
 COPY target/tfm-grpc-application-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose the port on which the application runs
-EXPOSE 8082
+EXPOSE 9090
 
 # Command to run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

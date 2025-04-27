@@ -28,9 +28,6 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<api.yml>tfm-grpc-application-v1.yml</api.yml>
-		<sonar.organization>mda000009</sonar.organization>
-		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -97,9 +94,36 @@
 			<artifactId>junit-vintage-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty</artifactId>
+			<version>1.71.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-protobuf</artifactId>
+			<version>1.71.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-stub</artifactId>
+			<version>1.71.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.lognet</groupId>
+			<artifactId>grpc-spring-boot-starter</artifactId>
+			<version>5.1.5</version>
+		</dependency>
     </dependencies>
 
 	<build>
+		<extensions>
+			<extension>
+					<groupId>kr.motd.maven</groupId>
+					<artifactId>os-maven-plugin</artifactId>
+					<version>1.7.0</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -111,46 +135,6 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.openapitools</groupId>
-				<artifactId>openapi-generator-maven-plugin</artifactId>
-				<version>7.10.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<inputSpec>${project.basedir}/src/main/resources/swagger/${api.yml}</inputSpec>
-					<generatorName>spring</generatorName>
-					<apiPackage>${project.groupId}.api</apiPackage>
-					<modelPackage>${project.groupId}.model</modelPackage>
-					<generateSupportingFiles>true</generateSupportingFiles>
-					<configOptions>
-						<sourceFolder>src/gen/java/main</sourceFolder>
-						<interfaceOnly>true</interfaceOnly>
-						<openApiNullable>false</openApiNullable>
-						<useJakartaEe>true</useJakartaEe>
-						<additionalModelTypeAnnotations>
-							@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
-						</additionalModelTypeAnnotations>
-						<useTags>true</useTags>
-						<delegatePatterns>true</delegatePatterns>
-					</configOptions>
-					<typeMappings>
-						<typeMapping>float=java.math.BigDecimal</typeMapping>
-						<typeMapping>date=LocalDate</typeMapping>
-						<typeMapping>DateTime=LocalDateTime</typeMapping>
-						<typeMapping>Boolean=boolean</typeMapping>
-					</typeMappings>
-					<importMappings>
-						<importMapping>LocalDate=java.time.LocalDate</importMapping>
-						<importMapping>LocalDateTime=java.time.LocalDateTime</importMapping>
-					</importMappings>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -168,6 +152,24 @@
 						<phase>test</phase>
 						<goals>
 							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.xolstice.maven.plugins</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+				<version>0.6.1</version>
+				<configuration>
+					<protocArtifact>com.google.protobuf:protoc:3.21.12:exe:${os.detected.classifier}</protocArtifact>
+					<pluginId>grpc-java</pluginId>
+					<pluginArtifact>io.grpc:protoc-gen-grpc-java:1.57.2:exe:${os.detected.classifier}</pluginArtifact>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>compile-custom</goal>
 						</goals>
 					</execution>
 				</executions>
