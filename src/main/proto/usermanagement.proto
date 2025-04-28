@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package com.isia.tfm;
+
+service UserManagementService {
+    rpc CreateUser (User) returns (CreateUserResponse);
+    rpc GetUsersByGender (GetUsersByGenderRequest) returns (GetUsersByGenderResponse);
+}
+
+message User {
+    string firstName = 1;
+    string lastName = 2;
+    string username = 3;
+    string password = 4;
+    string birthdate = 5;
+    string gender = 6;
+    string email = 7;
+    string phoneNumber = 8;
+}
+
+message ReturnUser {
+    string firstName = 1;
+    string lastName = 2;
+    string username = 3;
+    string birthdate = 4;
+    string email = 5;
+    string phoneNumber = 6;
+}
+
+message CreateUserResponse {
+    string username = 1;
+    string message = 2;
+}
+
+message GetUsersByGenderRequest {
+    string gender = 1;
+}
+
+message GetUsersByGenderResponse {
+    repeated ReturnUser users = 1;
+}
