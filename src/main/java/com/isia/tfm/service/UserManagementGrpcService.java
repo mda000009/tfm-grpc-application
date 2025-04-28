@@ -10,14 +10,14 @@ import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import net.devh.boot.grpc.server.service.GrpcService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
 @Slf4j
-@Service
+@GrpcService
 public class UserManagementGrpcService extends UserManagementServiceGrpc.UserManagementServiceImplBase {
 
     private final ObjectMapper objectMapperFailOnUnknown;
