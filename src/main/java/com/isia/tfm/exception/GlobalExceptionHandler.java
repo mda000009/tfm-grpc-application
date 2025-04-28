@@ -1,14 +1,14 @@
 package com.isia.tfm.exception;
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.isia.tfm.model.ErrorDetailsError;
+import com.isia.tfm.model.dto.ErrorDetailsDto;
+import com.isia.tfm.model.dto.ErrorDetailsErrorDto;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import jakarta.validation.ConstraintViolationException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import com.isia.tfm.model.ErrorDetails;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
      * @return the response entity with error details
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDetails> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorDetailsDto> handleValidationException(MethodArgumentNotValidException ex) {
         return buildErrorResponse(VALIDATION_ERROR_MESSAGE);
     }
 
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
      * @return the response entity with error details
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorDetails> handleConstraintViolationException(ConstraintViolationException ex) {
+    public ResponseEntity<ErrorDetailsDto> handleConstraintViolationException(ConstraintViolationException ex) {
         return buildErrorResponse(VALIDATION_ERROR_MESSAGE);
     }
 
@@ -44,8 +44,8 @@ public class GlobalExceptionHandler {
      * @return the response entity with error details
      */
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorDetails> handleCustomException(CustomException ex) {
-        ErrorDetailsError errorDetailsError = ex.getErrorDetails().getError();
+    public ResponseEntity<ErrorDetailsDto> handleCustomException(CustomException ex) {
+        ErrorDetailsErrorDto errorDetailsError = ex.getErrorDetails().getError();
         HttpStatus status = switch (errorDetailsError.getStatus()) {
             case "400" -> HttpStatus.BAD_REQUEST;
             case "404" -> HttpStatus.NOT_FOUND;
@@ -62,14 +62,14 @@ public class GlobalExceptionHandler {
      * @return the response entity with error details
      */
     @ExceptionHandler(UnrecognizedPropertyException.class)
-    public ResponseEntity<ErrorDetails> handleInvalidAttributeName(UnrecognizedPropertyException ex) {
+    public ResponseEntity<ErrorDetailsDto> handleInvalidAttributeName(UnrecognizedPropertyException ex) {
         String message = "Attribute name '" + ex.getPropertyName() + "' is incorrect.";
         return buildErrorResponse(message);
     }
 
-    private ResponseEntity<ErrorDetails> buildErrorResponse(String message) {
-        ErrorDetailsError errorDetails = new ErrorDetailsError("400", "Bad Request", message);
-        ErrorDetails errorResponse = new ErrorDetails(errorDetails);
+    private ResponseEntity<ErrorDetailsDto> buildErrorResponse(String message) {
+        ErrorDetailsErrorDto errorDetails = new ErrorDetailsErrorDto("400", "Bad Request", message);
+        ErrorDetailsDto errorResponse = new ErrorDetailsDto(errorDetails);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
