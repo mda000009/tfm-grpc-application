@@ -1,76 +1,70 @@
 package com.isia.tfm.exception;
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.isia.tfm.model.dto.ErrorDetailsDto;
 import com.isia.tfm.model.dto.ErrorDetailsErrorDto;
+import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final String VALIDATION_ERROR_MESSAGE = "The request does not meet the validations";
 
     /**
-     * Handles MethodArgumentNotValidException.
+     * Maneja MethodArgumentNotValidException.
      *
-     * @param ex the exception
-     * @return the response entity with error details
+     * @param ex la excepción
+     * @param responseObserver el observador de respuesta de gRPC
      */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDetailsDto> handleValidationException(MethodArgumentNotValidException ex) {
-        return buildErrorResponse(VALIDATION_ERROR_MESSAGE);
+    public void handleValidationException(MethodArgumentNotValidException ex, StreamObserver<?> responseObserver) {
+        handleGrpcError(Status.INVALID_ARGUMENT.withDescription(VALIDATION_ERROR_MESSAGE), responseObserver);
     }
 
     /**
-     * Handles ConstraintViolationException.
+     * Maneja ConstraintViolationException.
      *
-     * @param ex the exception
-     * @return the response entity with error details
+     * @param ex la excepción
+     * @param responseObserver el observador de respuesta de gRPC
      */
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorDetailsDto> handleConstraintViolationException(ConstraintViolationException ex) {
-        return buildErrorResponse(VALIDATION_ERROR_MESSAGE);
+    public void handleConstraintViolationException(ConstraintViolationException ex, StreamObserver<?> responseObserver) {
+        handleGrpcError(Status.INVALID_ARGUMENT.withDescription(VALIDATION_ERROR_MESSAGE), responseObserver);
     }
 
     /**
-     * Handles CustomException.
+     * Maneja CustomException.
      *
-     * @param ex the exception
-     * @return the response entity with error details
+     * @param ex la excepción
+     * @param responseObserver el observador de respuesta de gRPC
      */
-    @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorDetailsDto> handleCustomException(CustomException ex) {
+    public void handleCustomException(CustomException ex, StreamObserver<?> responseObserver) {
         ErrorDetailsErrorDto errorDetailsError = ex.getErrorDetails().getError();
-        HttpStatus status = switch (errorDetailsError.getStatus()) {
-            case "400" -> HttpStatus.BAD_REQUEST;
-            case "404" -> HttpStatus.NOT_FOUND;
-            case "409" -> HttpStatus.CONFLICT;
-            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        Status status = switch (errorDetailsError.getStatus()) {
+            case "3" -> Status.INVALID_ARGUMENT.withDescription(errorDetailsError.getMessage());
+            case "5" -> Status.NOT_FOUND.withDescription(errorDetailsError.getMessage());
+            case "6" -> Status.ALREADY_EXISTS.withDescription(errorDetailsError.getMessage());
+            default -> Status.INTERNAL.withDescription(errorDetailsError.getMessage());
         };
-        return new ResponseEntity<>(ex.getErrorDetails(), status);
+        handleGrpcError(status, responseObserver);
     }
 
     /**
-     * Handles UnrecognizedPropertyException.
+     * Maneja UnrecognizedPropertyException.
      *
-     * @param ex the exception
-     * @return the response entity with error details
+     * @param ex la excepción
+     * @param responseObserver el observador de respuesta de gRPC
      */
-    @ExceptionHandler(UnrecognizedPropertyException.class)
-    public ResponseEntity<ErrorDetailsDto> handleInvalidAttributeName(UnrecognizedPropertyException ex) {
+    public void handleInvalidAttributeName(UnrecognizedPropertyException ex, StreamObserver<?> responseObserver) {
         String message = "Attribute name '" + ex.getPropertyName() + "' is incorrect.";
-        return buildErrorResponse(message);
+        handleGrpcError(Status.INVALID_ARGUMENT.withDescription(message), responseObserver);
     }
 
-    private ResponseEntity<ErrorDetailsDto> buildErrorResponse(String message) {
-        ErrorDetailsErrorDto errorDetails = new ErrorDetailsErrorDto("400", "Bad Request", message);
-        ErrorDetailsDto errorResponse = new ErrorDetailsDto(errorDetails);
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    /**
+     *
+     * @param status el estado de gRPC
+     * @param responseObserver el observador de respuesta de gRPC
+     */
+    private void handleGrpcError(Status status, StreamObserver<?> responseObserver) {
+        responseObserver.onError(status.asRuntimeException());
     }
-
 }

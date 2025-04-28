@@ -38,7 +38,9 @@ public class UserManagementGrpcService extends UserManagementServiceGrpc.UserMan
     @Override
     public void createUser(Usermanagement.User request, StreamObserver<Usermanagement.CreateUserResponse> responseObserver) {
         try {
-            UserDto user = objectMapperIgnoreUnknown.convertValue(request, UserDto.class);
+            UserDto user = new UserDto(request.getFirstName(), request.getLastName(), request.getUsername(),
+                    request.getPassword(), request.getBirthdate(), request.getGender(),
+                    request.getEmail(), request.getPhoneNumber());
 
             checkUsernameAndEmail(user);
             log.debug("Username and email checked");
@@ -59,7 +61,7 @@ public class UserManagementGrpcService extends UserManagementServiceGrpc.UserMan
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
             } else {
-                throw new CustomException("500", "Internal Server Error", "Internal Server Error");
+                throw new CustomException("13", "Internal Server Error", "Internal Server Error");
             }
         } catch (Exception e) {
             responseObserver.onError(e);
@@ -75,10 +77,10 @@ public class UserManagementGrpcService extends UserManagementServiceGrpc.UserMan
 
         if (usernameExists) {
             log.error("The username is already in use");
-            throw new CustomException("409", "Conflict", "The username is already in use");
+            throw new CustomException("6", "Already exists", "The username is already in use");
         } else if (emailExists) {
             log.error("The email is already in use");
-            throw new CustomException("409", "Conflict", "The email is already in use");
+            throw new CustomException("6", "Already exists", "The email is already in use");
         }
     }
 
@@ -102,7 +104,7 @@ public class UserManagementGrpcService extends UserManagementServiceGrpc.UserMan
 
     private void validateGender(String gender) {
         if (gender != null && !gender.isEmpty() && !gender.equals("Male") && !gender.equals("Female") && !gender.equals("Another")) {
-            throw new CustomException("400", "Bad Request", "Gender param must be Male, Female or Another");
+            throw new CustomException("3", "Invalid argument", "Gender param must be Male, Female or Another");
         }
     }
 }
