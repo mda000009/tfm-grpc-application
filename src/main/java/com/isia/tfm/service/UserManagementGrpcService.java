@@ -91,7 +91,14 @@ public class UserManagementGrpcService extends UserManagementServiceGrpc.UserMan
         List<com.isia.tfm.entity.ApplicationUserEntity> applicationUserEntityList = applicationUserRepository.findByGender(request.getGender());
 
         List<Usermanagement.ReturnUser> data = applicationUserEntityList.stream()
-                .map(entity -> objectMapperIgnoreUnknown.convertValue(entity, Usermanagement.ReturnUser.class))
+                .map(entity -> Usermanagement.ReturnUser.newBuilder()
+                        .setUsername(entity.getUsername())
+                        .setFirstName(entity.getFirstName())
+                        .setLastName(entity.getLastName())
+                        .setBirthdate(entity.getBirthdate().toString())
+                        .setEmail(entity.getEmail())
+                        .setPhoneNumber(entity.getPhoneNumber())
+                        .build())
                 .toList();
 
         Usermanagement.GetUsersByGenderResponse response = Usermanagement.GetUsersByGenderResponse.newBuilder()
