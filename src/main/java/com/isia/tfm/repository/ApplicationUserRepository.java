@@ -1,6 +1,6 @@
 package com.isia.tfm.repository;
 
-import com.isia.tfm.entity.ApplicationUserEntity;
+import com.isia.tfm.model.entity.ApplicationUserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
